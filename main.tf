@@ -15,7 +15,7 @@ provider "aws" {
 # AWS 설정 끝
 
 # VPC 설정 시작
-resource "aws_vpc" "vpc_1" {
+resource "aws_vpc" "vpc_13" {
   cidr_block = "10.0.0.0/16"
 
   # 무조건 켜세요.
@@ -24,12 +24,12 @@ resource "aws_vpc" "vpc_1" {
   enable_dns_hostnames = true
 
   tags = {
-    Name = "${var.prefix}-vpc-1"
+    Name = "${var.prefix}-${var.vpc}"
   }
 }
 
 resource "aws_subnet" "subnet_1" {
-  vpc_id                  = aws_vpc.vpc_1.id
+  vpc_id                  = aws_vpc.vpc_13.id
   cidr_block              = "10.0.1.0/24"
   availability_zone       = "${var.region}a"
   map_public_ip_on_launch = true
@@ -40,7 +40,7 @@ resource "aws_subnet" "subnet_1" {
 }
 
 resource "aws_subnet" "subnet_2" {
-  vpc_id                  = aws_vpc.vpc_1.id
+  vpc_id                  = aws_vpc.vpc_13.id
   cidr_block              = "10.0.2.0/24"
   availability_zone       = "${var.region}b"
   map_public_ip_on_launch = true
@@ -51,7 +51,7 @@ resource "aws_subnet" "subnet_2" {
 }
 
 resource "aws_subnet" "subnet_3" {
-  vpc_id                  = aws_vpc.vpc_1.id
+  vpc_id                  = aws_vpc.vpc_13.id
   cidr_block              = "10.0.3.0/24"
   availability_zone       = "${var.region}c"
   map_public_ip_on_launch = true
@@ -62,7 +62,7 @@ resource "aws_subnet" "subnet_3" {
 }
 
 resource "aws_internet_gateway" "igw_1" {
-  vpc_id = aws_vpc.vpc_1.id
+  vpc_id = aws_vpc.vpc_13.id
 
   tags = {
     Name = "${var.prefix}-igw-1"
@@ -70,7 +70,7 @@ resource "aws_internet_gateway" "igw_1" {
 }
 
 resource "aws_route_table" "rt_1" {
-  vpc_id = aws_vpc.vpc_1.id
+  vpc_id = aws_vpc.vpc_13.id
 
   route {
     cidr_block = "0.0.0.0/0"
@@ -114,7 +114,7 @@ resource "aws_security_group" "sg_1" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  vpc_id = aws_vpc.vpc_1.id
+  vpc_id = aws_vpc.vpc_13.id
 
   tags = {
     Name = "${var.prefix}-sg-1"
@@ -124,11 +124,11 @@ resource "aws_security_group" "sg_1" {
 # VPC 설정 끝
 
 # ROUTE 53 설정 시작
-resource "aws_route53_zone" "vpc_1_zone" {
+resource "aws_route53_zone" "vpc_13_zone" {
   vpc {
-    vpc_id = aws_vpc.vpc_1.id
+    vpc_id = aws_vpc.vpc_13.id
   }
-  name = "vpc-1.com"
+  name = "${var.vpc}.com"
 }
 # ROUTE 53 설정 끝
 
@@ -212,7 +212,7 @@ END_OF_FILE
 }
 
 resource "aws_instance" "ec2_1" {
-  ami                         = "ami-097bf0ec147165215"
+  ami                         = var.ami
   instance_type               = "t2.large"
   subnet_id                   = aws_subnet.subnet_1.id
   vpc_security_group_ids      = [aws_security_group.sg_1.id]
@@ -240,16 +240,16 @@ EOF
 }
 
 # ec2-1 에 private 도메인 연결
-resource "aws_route53_record" "record_ec2-1_vpc-1_com" {
-  zone_id = aws_route53_zone.vpc_1_zone.zone_id
-  name    = "ec2-1.vpc-1.com"
+resource "aws_route53_record" "record_ec2-1_vpc-13_com" {
+  zone_id = aws_route53_zone.vpc_13_zone.zone_id
+  name    = "ec2-1.${var.vpc}.com"
   type    = "A"
   ttl     = "300"
   records = [aws_instance.ec2_1.private_ip]
 }
 
 resource "aws_instance" "ec2_2" {
-  ami                         = "ami-097bf0ec147165215"
+  ami                         = var.ami
   instance_type               = "t2.large"
   subnet_id                   = aws_subnet.subnet_3.id
   vpc_security_group_ids      = [aws_security_group.sg_1.id]
@@ -277,16 +277,16 @@ EOF
 }
 
 # ec2-2 에 private 도메인 연결
-resource "aws_route53_record" "record_ec2-2_vpc-1_com" {
-  zone_id = aws_route53_zone.vpc_1_zone.zone_id
-  name    = "ec2-2.vpc-1.com"
+resource "aws_route53_record" "record_ec2-2_vpc-13_com" {
+  zone_id = aws_route53_zone.vpc_13_zone.zone_id
+  name    = "ec2-2.${var.vpc}.com"
   type    = "A"
   ttl     = "300"
   records = [aws_instance.ec2_2.private_ip]
 }
 
 resource "aws_instance" "ec2_3" {
-  ami                         = "ami-097bf0ec147165215"
+  ami                         = var.ami
   instance_type               = "t2.large"
   subnet_id                   = aws_subnet.subnet_3.id
   vpc_security_group_ids      = [aws_security_group.sg_1.id]
@@ -314,9 +314,9 @@ EOF
 }
 
 # ec2-3 에 private 도메인 연결
-resource "aws_route53_record" "record_ec2-3_vpc-1_com" {
-  zone_id = aws_route53_zone.vpc_1_zone.zone_id
-  name    = "ec2-3.vpc-1.com"
+resource "aws_route53_record" "record_ec2-3_vpc-13_com" {
+  zone_id = aws_route53_zone.vpc_13_zone.zone_id
+  name    = "ec2-3.${var.vpc}.com"
   type    = "A"
   ttl     = "300"
   records = [aws_instance.ec2_3.private_ip]
