@@ -217,6 +217,7 @@ resource "aws_instance" "ec2_1" {
   subnet_id                   = aws_subnet.subnet_1.id
   vpc_security_group_ids      = [aws_security_group.sg_1.id]
   associate_public_ip_address = true
+  key_name                    = "lldd"
 
   # Assign IAM role to the instance
   iam_instance_profile = aws_iam_instance_profile.instance_profile_1.name
@@ -253,6 +254,7 @@ resource "aws_instance" "ec2_2" {
   subnet_id                   = aws_subnet.subnet_3.id
   vpc_security_group_ids      = [aws_security_group.sg_1.id]
   associate_public_ip_address = true
+  key_name                    = "lldd"
 
   # Assign IAM role to the instance
   iam_instance_profile = aws_iam_instance_profile.instance_profile_1.name
